@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Logístico de Volquetes V13</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===============================
+           HEADER
+        ================================ */
+
+        .header {
+            background: var(--surface);
+            padding: 20px 30px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border);
+            z-index: 50;
+        }
+
+        .header-title {
+            margin: 0 0 15px;
+            font-size: 1.2rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .estado-nube {
+            font-size: 0.82rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #e0e7ff;
+            color: #4338ca;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .controles-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 45px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            resize: none;
+            transition: 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,.08);
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            height: 45px;
+            padding: 0 18px;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: .2s;
+        }
+
+        button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .btn-cargar {
+            background: var(--accent);
+        }
+
+        .btn-cargar:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-sync {
+            background: var(--success);
+        }
+
+        .btn-sync:hover {
+            background: var(--success-hover);
+        }
+
+        .btn-reset {
+            background: var(--danger);
+        }
+
+        .btn-reset:hover {
+            background: var(--danger-hover);
+        }
+
+        /* ===============================
+           KPI
+        ================================ */
+
+        .dashboard-kpis {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .kpi-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .kpi-num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .kpi-label {
+            font-size: .8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: .5px;
+            text-align: center;
+        }
+
+        /* ===============================
+           TABLA
+        ================================ */
+
+        .contenedor-tabla {
+            flex-grow: 1;
+            overflow: auto;
+            padding: 20px 30px;
+        }
+
+        .tabla-card {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,.05);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1050px;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: .93rem;
+        }
+
+        tbody tr:hover {
+            background: #f1f5f9;
+        }
+
+        .placa-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .empresa-text {
+            font-weight: 600;
+        }
+
+        .hora {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .hora-proyectada {
+            color: #d97706;
+            font-weight: 700;
+            background: #fef3c7;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .hora-proyectada-carga {
+            color: #059669;
+            font-weight: 700;
+            background: #d1fae5;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .fila-adentro {
+            background: #f0fdf4;
+            border-left: 4px solid var(--success);
+        }
+
+        .fila-terminado {
+            opacity: .65;
+            background: #f8fafc;
+            border-left: 4px solid var(--border);
+        }
+
+        /* ===============================
+           CHECKBOX
+        ================================ */
+
+        .check-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        /* ===============================
+           BORRAR
+        ================================ */
+
+        .btn-delete-row {
+            background: transparent;
+            color: var(--danger);
+            border: none;
+            height: auto;
+            min-width: 40px;
+            padding: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .btn-delete-row:hover {
+            background: #fee2e2;
+        }
+
+        /* ===============================
+           MODALES
+        ================================ */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,.72);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: .25s;
+            padding: 20px;
+        }
+
+        .modal-overlay.activo {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,.2);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .modal-content p {
+            color: var(--text-muted);
+            font-size: .95rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-botones {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-modal {
+            width: 100%;
+            height: auto;
+            min-height: 44px;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .btn-rojo {
+            background: var(--danger);
+        }
+
+        .btn-azul {
+            background: var(--accent);
+        }
+
+        .btn-verde {
+            background: var(--success);
+        }
+
+        .btn-gris {
+            background: var(--text-muted);
+        }
+
+        /* ===============================
+           LOADER
+        ================================ */
+
+        .loader-overlay-api {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,.82);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+            visibility: hidden;
+            opacity: 0;
+            transition: .2s;
+        }
+
+        .loader-overlay-api.activo {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loader-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.12);
+            text-align: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        .loader-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===============================
+           RESPONSIVE
+        ================================ */
+
+        @media (max-width: 1100px) {
+            .controles-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            textarea {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .header {
+                padding: 15px;
+            }
+
+            .header-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            textarea {
+                grid-column: auto;
+            }
+
+            .dashboard-kpis {
+                gap: 10px;
+            }
+
+            .contenedor-tabla {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h2 class="header-title">
+
+            <span>
+                Control Logístico de Volquetes
+            </span>
+
+            <span
+                class="estado-nube"
+                id="statusNube">
+                🔄 Conectando...
+            </span>
+
+        </h2>
+
+
+        <div class="controles-grid">
+
+            <textarea
+                id="txtPlacas"
+                placeholder="Pega las placas aquí (separadas por coma, espacio o enter)...">
+            </textarea>
+
+
+            <button
+                class="btn-cargar"
+                id="btnCargar"
+                onclick="app.intentarCargar()">
+                ➕ Cargar
+            </button>
+
+
+            <button
+                class="btn-reset"
+                id="btnReset"
+                onclick="app.intentarReset()">
+                🗑️ Resetear
+            </button>
+
+
+            <button
+                class="btn-sync"
+                id="btnSync"
+                onclick="app.forzarSincronizacion()">
+                🔄 Nube
+            </button>
+
+        </div>
+
+
+        <div class="dashboard-kpis">
+
+            <div class="kpi-card">
+
+                <span
+                    class="kpi-num"
+                    id="kpiAdentro">
+                    0
+                </span>
+
+                <span class="kpi-label">
+                    Volquetes en Tránsito/Planta
+                </span>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <span
+                    class="kpi-num"
+                    id="kpiTerminados">
+                    0
+                </span>
+
+                <span class="kpi-label">
+                    Servicios Completados
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="contenedor-tabla">
+
+        <div class="tabla-card">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>PLACA</th>
+                        <th>ENTRADA</th>
+                        <th>HORA INGRESO</th>
+                        <th>LLEGADA PLANTA (+4H)</th>
+                        <th>SALIDA</th>
+                        <th>HORA SALIDA</th>
+                        <th>LLEGADA CARGA (+2:30H)</th>
+                        <th>EMPRESA</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="cuerpoTabla"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===============================
+         MODAL CARGA
+    ================================ -->
+
+    <div
+        id="modalCarga"
+        class="modal-overlay">
+
+        <div class="modal-content">
+
+            <h3>
+                Ya hay placas registradas
+            </h3>
+
+            <p>
+                ¿Qué deseas hacer con las nuevas placas?
+            </p>
+
+            <div class="modal-botones">
+
+                <button
+                    class="btn-modal btn-verde"
+                    onclick="app.ejecutarCarga('agregar')">
+                    AGREGAR A LA LISTA ACTUAL
+                </button>
+
+                <button
+                    class="btn-modal btn-rojo"
+                    onclick="app.ejecutarCarga('nueva')">
+                    BORRAR TODO Y CREAR NUEVA LISTA
+                </button>
+
+                <button
+                    class="btn-modal btn-gris"
+                    onclick="app.cerrarModales()">
+                    CANCELAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===============================
+         MODAL RESET
+    ================================ -->
+
+    <div
+        id="modalReset"
+        class="modal-overlay">
+
+        <div class="modal-content">
+
+            <h3>
+                ¿Qué deseas resetear?
+            </h3>
+
+            <p>
+                Selecciona cómo deseas limpiar los registros.
+            </p>
+
+            <div class="modal-botones">
+
+                <button
+                    class="btn-modal btn-rojo"
+                    onclick="app.ejecutarReset('todo')">
+                    BORRAR TODAS LAS PLACAS
+                </button>
+
+                <button
+                    class="btn-modal btn-azul"
+                    onclick="app.ejecutarReset('checks')">
+                    SOLO BORRAR CHECKS Y HORAS
+                </button>
+
+                <button
+                    class="btn-modal btn-gris"
+                    onclick="app.cerrarModales()">
+                    CANCELAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===============================
+         LOADER
+    ================================ -->
+
+    <div
+        class="loader-overlay-api"
+        id="loader">
+
+        <div class="loader-box">
+
+            <div class="spinner"></div>
+
+            <div
+                class="loader-text"
+                id="loaderText">
+                Sincronizando...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        /******************************************************
+         * URL DE TU GOOGLE APPS SCRIPT
+         ******************************************************/
+
+        const URL_WEB_APP =
+            'https://script.google.com/macros/s/AKfycbzc-hzDGOZDh59EgxHbL62rYguSIuWYHEP5dqS_Bf9rIUFEWA7YgZIEqds2sgaCSWBltA/exec';
+
+
+        /******************************************************
+         * APP
+         ******************************************************/
+
+        const app = {
+
+            datos: {},
+
+            sincronizando: false,
+
+            sincronizacionPendiente: false,
+
+            descargando: false,
+
+
+            /**************************************************
+             * INICIAR
+             **************************************************/
+
+            iniciar: async function () {
+
+                await this.forzarSincronizacion();
+
+            },
+
+
+            /**************************************************
+             * LOADER
+             **************************************************/
+
+            mostrarLoader: function (
+                mostrar,
+                texto = 'Sincronizando...'
+            ) {
+
+                const loader =
+                    document.getElementById('loader');
+
+                const loaderText =
+                    document.getElementById('loaderText');
+
+                loaderText.textContent = texto;
+
+                loader.classList.toggle(
+                    'activo',
+                    mostrar
+                );
+
+            },
+
+
+            /**************************************************
+             * MODALES
+             **************************************************/
+
+            cerrarModales: function () {
+
+                document
+                    .getElementById('modalReset')
+                    .classList.remove('activo');
+
+                document
+                    .getElementById('modalCarga')
+                    .classList.remove('activo');
+
+            },
+
+
+            /**************************************************
+             * STATUS
+             **************************************************/
+
+            actualizarStatusNube: function (
+                mensaje,
+                error = false
+            ) {
+
+                const el =
+                    document.getElementById(
+                        'statusNube'
+                    );
+
+                el.textContent = mensaje;
+
+                if (error) {
+
+                    el.style.color = '#b91c1c';
+
+                    el.style.background =
+                        '#fee2e2';
+
+                } else {
+
+                    el.style.color =
+                        '#4338ca';
+
+                    el.style.background =
+                        '#e0e7ff';
+
+                }
+
+            },
+
+
+            /**************************************************
+             * HORA
+             **************************************************/
+
+            obtenerHoraActual: function () {
+
+                const now =
+                    new Date();
+
+                return (
+                    String(
+                        now.getHours()
+                    ).padStart(2, '0') +
+                    ':' +
+                    String(
+                        now.getMinutes()
+                    ).padStart(2, '0')
+                );
+
+            },
+
+
+            /**************************************************
+             * SUMAR HORAS
+             **************************************************/
+
+            sumarHoras: function (
+                horaStr,
+                horasAsumar
+            ) {
+
+                if (!horaStr) {
+                    return '';
+                }
+
+                const partes =
+                    horaStr
+                        .split(':')
+                        .map(Number);
+
+                const h = partes[0];
+
+                const m = partes[1];
+
+
+                const date =
+                    new Date();
+
+                date.setHours(
+                    h,
+                    m,
+                    0,
+                    0
+                );
+
+
+                date.setMinutes(
+                    date.getMinutes() +
+                    horasAsumar * 60
+                );
+
+
+                return (
+                    String(
+                        date.getHours()
+                    ).padStart(2, '0') +
+                    ':' +
+                    String(
+                        date.getMinutes()
+                    ).padStart(2, '0')
+                );
+
+            },
+
+
+            /**************************************************
+             * DESCARGAR DE SHEETS
+             **************************************************/
+
+            forzarSincronizacion:
+                async function () {
+
+                    if (this.descargando) {
+                        return;
+                    }
+
+
+                    if (this.sincronizando) {
+
+                        this.actualizarStatusNube(
+                            '⏳ Guardando cambios...'
+                        );
+
+                        return;
+                    }
+
+
+                    this.descargando = true;
+
+
+                    this.mostrarLoader(
+                        true,
+                        'Descargando de Google Sheets...'
+                    );
+
+
+                    this.actualizarStatusNube(
+                        '🔄 Descargando...'
+                    );
+
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                URL_WEB_APP +
+                                '?t=' +
+                                Date.now(),
+                                {
+                                    method: 'GET',
+                                    cache: 'no-store'
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                'HTTP ' +
+                                response.status
+                            );
+
+                        }
+
+
+                        const resultado =
+                            await response.json();
+
+
+                        if (
+                            resultado.status !==
+                            'success'
+                        ) {
+
+                            throw new Error(
+                                resultado.message ||
+                                'Error del servidor.'
+                            );
+
+                        }
+
+
+                        this.datos =
+                            resultado.data || {};
+
+
+                        this.dibujarTabla();
+
+
+                        const cantidad =
+                            Object.keys(
+                                this.datos
+                            ).length;
+
+
+                        this.actualizarStatusNube(
+                            `🟢 Sincronizado (${cantidad})`
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            'GET error:',
+                            error
+                        );
+
+
+                        this.actualizarStatusNube(
+                            '🔴 Error de conexión',
+                            true
+                        );
+
+
+                        alert(
+                            'No se pudo conectar con Google Sheets.\n\n' +
+                            error.message
+                        );
+
+                    } finally {
+
+                        this.descargando =
+                            false;
+
+                        this.mostrarLoader(
+                            false
+                        );
+
+                    }
+
+                },
+
+
+            /**************************************************
+             * GUARDAR EN SHEETS
+             **************************************************/
+
+            subirNube:
+                async function () {
+
+                    if (this.sincronizando) {
+
+                        this.sincronizacionPendiente =
+                            true;
+
+                        return;
+
+                    }
+
+
+                    this.sincronizando =
+                        true;
+
+
+                    this.mostrarLoader(
+                        true,
+                        'Guardando en Google Sheets...'
+                    );
+
+
+                    this.actualizarStatusNube(
+                        '⏳ Guardando...'
+                    );
+
+
+                    try {
+
+                        /*
+                         * Hacemos copia del estado actual.
+                         */
+                        const payload =
+                            JSON.parse(
+                                JSON.stringify(
+                                    this.datos
+                                )
+                            );
+
+
+                        /*
+                         * IMPORTANTE:
+                         * No agregamos headers personalizados.
+                         * Esto evita problemas de CORS/preflight.
+                         */
+                        const response =
+                            await fetch(
+                                URL_WEB_APP,
+                                {
+                                    method: 'POST',
+
+                                    body:
+                                        JSON.stringify({
+
+                                            action: 'SYNC',
+
+                                            payload:
+                                                payload
+
+                                        })
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                'HTTP ' +
+                                response.status
+                            );
+
+                        }
+
+
+                        const resultado =
+                            await response.json();
+
+
+                        if (
+                            resultado.status !==
+                            'success'
+                        ) {
+
+                            throw new Error(
+                                resultado.message ||
+                                'Google Apps Script rechazó la operación.'
+                            );
+
+                        }
+
+
+                        const cantidad =
+                            resultado.data &&
+                            resultado.data.cantidad !==
+                            undefined
+                                ? resultado.data.cantidad
+                                : Object.keys(
+                                    payload
+                                ).length;
+
+
+                        this.actualizarStatusNube(
+                            `🟢 Guardado (${cantidad})`
+                        );
+
+
+                        console.log(
+                            'SYNC OK',
+                            resultado
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            'POST error:',
+                            error
+                        );
+
+
+                        this.actualizarStatusNube(
+                            '🔴 Error al guardar',
+                            true
+                        );
+
+
+                        alert(
+                            'ERROR AL GUARDAR EN GOOGLE SHEETS\n\n' +
+                            error.message
+                        );
+
+
+                    } finally {
+
+                        this.sincronizando =
+                            false;
+
+
+                        this.mostrarLoader(
+                            false
+                        );
+
+
+                        /*
+                         * Si hubo otro cambio durante
+                         * el guardado, enviamos el estado
+                         * más reciente.
+                         */
+                        if (
+                            this.sincronizacionPendiente
+                        ) {
+
+                            this.sincronizacionPendiente =
+                                false;
+
+                            await this.subirNube();
+
+                        }
+
+                    }
+
+                },
+
+
+            /**************************************************
+             * INTENTAR CARGAR
+             **************************************************/
+
+            intentarCargar:
+                function () {
+
+                    const textarea =
+                        document.getElementById(
+                            'txtPlacas'
+                        );
+
+
+                    const texto =
+                        textarea.value;
+
+
+                    if (!texto.trim()) {
+
+                        alert(
+                            'El campo de placas está vacío.'
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        Object.keys(
+                            this.datos
+                        ).length === 0
+                    ) {
+
+                        this.ejecutarCarga(
+                            'nueva'
+                        );
+
+                    } else {
+
+                        document
+                            .getElementById(
+                                'modalCarga'
+                            )
+                            .classList.add(
+                                'activo'
+                            );
+
+                    }
+
+                },
+
+
+            /**************************************************
+             * EJECUTAR CARGA
+             **************************************************/
+
+            ejecutarCarga:
+                async function (modo) {
+
+                    const textarea =
+                        document.getElementById(
+                            'txtPlacas'
+                        );
+
+
+                    const texto =
+                        textarea.value;
+
+
+                    /*
+                     * Acepta:
+                     *
+                     * ABC123
+                     * ABC123, DEF456
+                     * ABC123
+                     * DEF456
+                     *
+                     */
+                    const lineas =
+                        texto.split(
+                            /[\s,;]+/
+                        );
+
+
+                    if (
+                        modo === 'nueva'
+                    ) {
+
+                        this.datos = {};
+
+                    }
+
+
+                    let agregadas = 0;
+
+
+                    lineas.forEach(
+                        linea => {
+
+                            const placa =
+                                linea
+                                    .trim()
+                                    .toUpperCase();
+
+
+                            if (
+                                placa.length > 2 &&
+                                !this.datos[placa]
+                            ) {
+
+                                this.datos[placa] = {
+
+                                    ingreso: false,
+
+                                    horaIngreso: '',
+
+                                    horaLlegadaPlanta: '',
+
+                                    salida: false,
+
+                                    horaSalida: '',
+
+                                    horaLlegadaCarga: '',
+
+                                    empresa: ''
+
+                                };
+
+
+                                agregadas++;
+
+                            }
+
+                        }
+                    );
+
+
+                    textarea.value =
+                        '';
+
+
+                    this.cerrarModales();
+
+
+                    if (
+                        agregadas > 0 ||
+                        modo === 'nueva'
+                    ) {
+
+                        this.dibujarTabla();
+
+                        await this.subirNube();
+
+                    } else {
+
+                        alert(
+                            'No se agregaron placas nuevas.'
+                        );
+
+                    }
+
+                },
+
+
+            /**************************************************
+             * RESET
+             **************************************************/
+
+            intentarReset:
+                function () {
+
+                    document
+                        .getElementById(
+                            'modalReset'
+                        )
+                        .classList.add(
+                            'activo'
+                        );
+
+                },
+
+
+            /**************************************************
+             * EJECUTAR RESET
+             **************************************************/
+
+            ejecutarReset:
+                async function (tipo) {
+
+                    if (
+                        tipo === 'todo'
+                    ) {
+
+                        const ok =
+                            confirm(
+                                '¿BORRAR TODAS LAS PLACAS?\n\n' +
+                                'También serán eliminadas de Google Sheets.'
+                            );
+
+
+                        if (!ok) {
+                            return;
+                        }
+
+
+                        this.datos = {};
+
+                    }
+
+
+                    if (
+                        tipo === 'checks'
+                    ) {
+
+                        const ok =
+                            confirm(
+                                '¿Borrar todos los checks y horarios?'
+                            );
+
+
+                        if (!ok) {
+                            return;
+                        }
+
+
+                        Object.keys(
+                            this.datos
+                        ).forEach(
+                            placa => {
+
+                                const registro =
+                                    this.datos[placa];
+
+
+                                registro.ingreso =
+                                    false;
+
+                                registro.horaIngreso =
+                                    '';
+
+                                registro.horaLlegadaPlanta =
+                                    '';
+
+                                registro.salida =
+                                    false;
+
+                                registro.horaSalida =
+                                    '';
+
+                                registro.horaLlegadaCarga =
+                                    '';
+
+                            }
+                        );
+
+                    }
+
+
+                    this.cerrarModales();
+
+                    this.dibujarTabla();
+
+                    await this.subirNube();
+
+                },
+
+
+            /**************************************************
+             * ELIMINAR PLACA
+             **************************************************/
+
+            eliminarPlaca:
+                async function (placa) {
+
+                    placa =
+                        String(
+                            placa
+                        )
+                        .trim()
+                        .toUpperCase();
+
+
+                    if (
+                        !this.datos[placa]
+                    ) {
+                        return;
+                    }
+
+
+                    const ok =
+                        confirm(
+                            `¿Eliminar la placa ${placa}?\n\n` +
+                            'También se eliminará de Google Sheets.'
+                        );
+
+
+                    if (!ok) {
+                        return;
+                    }
+
+
+                    /*
+                     * BORRADO LOCAL
+                     */
+                    delete this.datos[placa];
+
+
+                    /*
+                     * ACTUALIZAR PANTALLA
+                     */
+                    this.dibujarTabla();
+
+
+                    /*
+                     * GUARDAR EL NUEVO ESTADO
+                     */
+                    await this.subirNube();
+
+                },
+
+
+            /**************************************************
+             * ENTRADA
+             **************************************************/
+
+            toggleEntrada:
+                async function (placa) {
+
+                    const registro =
+                        this.datos[placa];
+
+
+                    if (!registro) {
+                        return;
+                    }
+
+
+                    registro.ingreso =
+                        !registro.ingreso;
+
+
+                    if (
+                        registro.ingreso
+                    ) {
+
+                        registro.horaIngreso =
+                            this.obtenerHoraActual();
+
+
+                        registro.horaLlegadaPlanta =
+                            this.sumarHoras(
+                                registro.horaIngreso,
+                                4
+                            );
+
+                    } else {
+
+                        registro.horaIngreso =
+                            '';
+
+                        registro.horaLlegadaPlanta =
+                            '';
+
+                        registro.salida =
+                            false;
+
+                        registro.horaSalida =
+                            '';
+
+                        registro.horaLlegadaCarga =
+                            '';
+
+                    }
+
+
+                    this.dibujarTabla();
+
+                    await this.subirNube();
+
+                },
+
+
+            /**************************************************
+             * SALIDA
+             **************************************************/
+
+            toggleSalida:
+                async function (placa) {
+
+                    const registro =
+                        this.datos[placa];
+
+
+                    if (!registro) {
+                        return;
+                    }
+
+
+                    if (!registro.ingreso) {
+
+                        alert(
+                            'Primero debes registrar la entrada.'
+                        );
+
+                        return;
+                    }
+
+
+                    registro.salida =
+                        !registro.salida;
+
+
+                    if (
+                        registro.salida
+                    ) {
+
+                        registro.horaSalida =
+                            this.obtenerHoraActual();
+
+
+                        registro.horaLlegadaCarga =
+                            this.sumarHoras(
+                                registro.horaSalida,
+                                2.5
+                            );
+
+                    } else {
+
+                        registro.horaSalida =
+                            '';
+
+                        registro.horaLlegadaCarga =
+                            '';
+
+                    }
+
+
+                    this.dibujarTabla();
+
+                    await this.subirNube();
+
+                },
+
+
+            /**************************************************
+             * ORDENAR
+             **************************************************/
+
+            ordenarPlacas:
+                function () {
+
+                    const lista =
+                        Object.keys(
+                            this.datos
+                        );
+
+
+                    lista.sort(
+                        (a, b) => {
+
+                            const A =
+                                this.datos[a];
+
+                            const B =
+                                this.datos[b];
+
+
+                            const Aterminado =
+                                A.ingreso &&
+                                A.salida;
+
+                            const Bterminado =
+                                B.ingreso &&
+                                B.salida;
+
+
+                            const Aadentro =
+                                A.ingreso &&
+                                !A.salida;
+
+                            const Badentro =
+                                B.ingreso &&
+                                !B.salida;
+
+
+                            if (
+                                Aterminado &&
+                                !Bterminado
+                            ) {
+                                return 1;
+                            }
+
+
+                            if (
+                                !Aterminado &&
+                                Bterminado
+                            ) {
+                                return -1;
+                            }
+
+
+                            if (
+                                Aadentro &&
+                                !Badentro
+                            ) {
+                                return -1;
+                            }
+
+
+                            if (
+                                !Aadentro &&
+                                Badentro
+                            ) {
+                                return 1;
+                            }
+
+
+                            return a.localeCompare(
+                                b
+                            );
+
+                        }
+                    );
+
+
+                    return lista;
+
+                },
+
+
+            /**************************************************
+             * ESCAPAR HTML
+             **************************************************/
+
+            escaparHTML:
+                function (valor) {
+
+                    return String(
+                        valor ?? ''
+                    )
+                    .replace(
+                        /&/g,
+                        '&amp;'
+                    )
+                    .replace(
+                        /</g,
+                        '&lt;'
+                    )
+                    .replace(
+                        />/g,
+                        '&gt;'
+                    )
+                    .replace(
+                        /"/g,
+                        '&quot;'
+                    )
+                    .replace(
+                        /'/g,
+                        '&#039;'
+                    );
+
+                },
+
+
+            /**************************************************
+             * DIBUJAR TABLA
+             **************************************************/
+
+            dibujarTabla:
+                function () {
+
+                    const tbody =
+                        document.getElementById(
+                            'cuerpoTabla'
+                        );
+
+
+                    tbody.innerHTML =
+                        '';
+
+
+                    let adentro = 0;
+
+                    let terminados = 0;
+
+
+                    const lista =
+                        this.ordenarPlacas();
+
+
+                    if (
+                        lista.length === 0
+                    ) {
+
+                        tbody.innerHTML = `
+                            <tr>
+                                <td
+                                    colspan="9"
+                                    style="
+                                        text-align:center;
+                                        padding:30px;
+                                        color:var(--text-muted);
+                                    "
+                                >
+                                    No hay volquetes registrados.
+                                </td>
+                            </tr>
+                        `;
+
+                    }
+
+
+                    lista.forEach(
+                        placa => {
+
+                            const info =
+                                this.datos[placa];
+
+
+                            const tr =
+                                document.createElement(
+                                    'tr'
+                                );
+
+
+                            if (
+                                info.ingreso &&
+                                info.salida
+                            ) {
+
+                                tr.className =
+                                    'fila-terminado';
+
+                                terminados++;
+
+                            }
+                            else if (
+                                info.ingreso
+                            ) {
+
+                                tr.className =
+                                    'fila-adentro';
+
+                                adentro++;
+
+                            }
+
+
+                            const placaSafe =
+                                this.escaparHTML(
+                                    placa
+                                );
+
+
+                            const empresaSafe =
+                                this.escaparHTML(
+                                    info.empresa || ''
+                                );
+
+
+                            tr.innerHTML = `
+
+                                <td>
+                                    <span class="placa-tag">
+                                        ${placaSafe}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="check-container">
+                                        <input
+                                            type="checkbox"
+                                            ${info.ingreso ? 'checked' : ''}
+                                            onchange="app.toggleEntrada('${placaSafe}')"
+                                        >
+                                    </div>
+                                </td>
+
+                                <td class="hora">
+                                    ${info.horaIngreso || '--:--'}
+                                </td>
+
+                                <td>
+                                    <span class="hora-proyectada">
+                                        ${info.horaLlegadaPlanta || '--:--'}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="check-container">
+                                        <input
+                                            type="checkbox"
+                                            ${info.salida ? 'checked' : ''}
+                                            ${!info.ingreso ? 'disabled' : ''}
+                                            onchange="app.toggleSalida('${placaSafe}')"
+                                        >
+                                    </div>
+                                </td>
+
+                                <td class="hora">
+                                    ${info.horaSalida || '--:--'}
+                                </td>
+
+                                <td>
+                                    <span class="hora-proyectada-carga">
+                                        ${info.horaLlegadaCarga || '--:--'}
+                                    </span>
+                                </td>
+
+                                <td class="empresa-text">
+                                    ${empresaSafe || '--'}
+                                </td>
+
+                                <td style="text-align:center;">
+                                    <button
+                                        class="btn-delete-row"
+                                        onclick="app.eliminarPlaca('${placaSafe}')"
+                                        title="Eliminar placa"
+                                    >
+                                        🗑️
+                                    </button>
+                                </td>
+
+                            `;
+
+
+                            tbody.appendChild(
+                                tr
+                            );
+
+                        }
+                    );
+
+
+                    document
+                        .getElementById(
+                            'kpiAdentro'
+                        )
+                        .textContent =
+                        adentro;
+
+
+                    document
+                        .getElementById(
+                            'kpiTerminados'
+                        )
+                        .textContent =
+                        terminados;
+
+                }
+
+        };
+
+
+        /******************************************************
+         * INICIO
+         ******************************************************/
+
+        window.addEventListener(
+            'load',
+            function () {
+
+                app.iniciar();
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
